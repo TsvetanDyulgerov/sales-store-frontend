@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Online Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html">Online Store</a>
+        <div class="d-flex">
+            <a href="login.html" class="btn btn-outline-light me-2">Login</a>
+            <a href="register.html" class="btn btn-primary">Register</a>
+        </div>
+    </div>
+</nav>
+<main class="container d-flex flex-column justify-content-center align-items-center text-center flex-grow-1">
+    <h2 class="mb-4">Login</h2>
+    <form style="max-width: 400px; width: 100%;" id="loginForm">
+        <div class="mb-3">
+            <input type="email" class="form-control" placeholder="Email" id="username" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" class="form-control" placeholder="Password" id="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+</main>
+<footer class="bg-dark text-light text-center py-3 mt-auto">
+    <p class="mb-0">Online Store.</p>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Login Script -->
+<script>
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Login failed');
+            }
+
+            const data = await response.json();
+
+            // Save JWT in localStorage
+            localStorage.setItem('jwtToken', data.token);
+
+            // Redirect to main store page
+            window.location.href = 'app';
+        } catch (err) {
+            errorMsg.textContent = err.message;
+        }
+    });
+</script>
+</body>
+</html>
