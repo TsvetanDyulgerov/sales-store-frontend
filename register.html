@@ -110,8 +110,6 @@
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Registering...';
 
         try {
-            console.log('Attempting registration...');
-            
             const response = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -124,22 +122,17 @@
                 throw new Error(data.message || `Registration failed: ${response.status}`);
             }
 
-            console.log('Registration successful:', data);
             showAlert("Registration successful! Redirecting to dashboard...", "success");
 
-            // Store JWT in localStorage
             localStorage.setItem("jwtToken", data.token);
 
-            // Redirect to app page
             setTimeout(() => {
                 window.location.href = "/app";
             }, 2000);
 
         } catch (error) {
-            console.error("Registration error:", error);
             showAlert(error.message || "An error occurred. Please try again later.", "danger");
         } finally {
-            // Reset button state
             submitButton.disabled = false;
             submitButton.innerHTML = 'Register';
         }

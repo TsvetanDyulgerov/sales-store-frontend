@@ -31,3 +31,66 @@
 .alert {
     transition: all 0.15s ease-in-out;
 }
+
+/* Admin Dashboard Enhancements */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.role-menu .card {
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.role-menu .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.role-menu .btn {
+    transition: all 0.3s ease;
+}
+
+.role-menu .btn:hover {
+    transform: scale(1.05);
+}
+
+/* Admin menu specific styling */
+#adminMenu .card {
+    border-width: 2px;
+}
+
+#adminMenu .card-body i {
+    transition: all 0.3s ease;
+}
+
+#adminMenu .card:hover i {
+    transform: scale(1.1);
+}
+
+/* Statistics cards */
+.card.bg-primary,
+.card.bg-warning,
+.card.bg-success,
+.card.bg-info,
+.card.bg-secondary {
+    transition: all 0.3s ease;
+}
+
+.card.bg-primary:hover,
+.card.bg-warning:hover,
+.card.bg-success:hover,
+.card.bg-info:hover,
+.card.bg-secondary:hover {
+    transform: scale(1.05);
+}
+
+/* Content area styling */
+#contentArea {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

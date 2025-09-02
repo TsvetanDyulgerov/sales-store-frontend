@@ -20,36 +20,26 @@ app.use((req, res, next) => {
     }
 });
 
-// Logging middleware
-app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-    next();
-});
-
 // Serve static files (CSS, JS, images)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Route for the main landing page
+// Route for main page (landing)
 app.get('/', (req, res) => {
-    console.log('Serving landing page');
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Route for login page
 app.get('/login', (req, res) => {
-    console.log('Serving login page');
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 // Route for register page
 app.get('/register', (req, res) => {
-    console.log('Serving register page');
     res.sendFile(path.join(__dirname, 'register.html'));
 });
 
-// Route for app page (dashboard)
+// Route for app page
 app.get('/app', (req, res) => {
-    console.log('Serving app page');
     res.sendFile(path.join(__dirname, 'app.html'));
 });
 
@@ -59,8 +49,6 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
 // Proxy login requests to backend
 app.post('/api/auth/login', async (req, res) => {
     try {
-        console.log('Proxying login request to backend:', `${BACKEND_URL}/api/auth/login`);
-        
         const fetch = (await import('node-fetch')).default;
         const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
             method: 'POST',
@@ -163,6 +151,38 @@ app.get('/api/products', async (req, res) => {
         } else {
             res.status(500).json({ message: 'Connection failed. Please try again later.' });
         }
+    }
+});
+
+// Admin access verification endpoint
+app.get('/api/auth/me', async (req, res) => {
+    try {
+        console.log('Checking admin access with backend:', `${BACKEND_URL}/api/auth/me`);
+
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.headers.authorization || ''
+            }
+        });
+
+        // Forward the exact response status from backend
+        if (response.ok) {
+            const data = await response.json();
+            res.status(200).json(data);
+        } else {
+            const data = await response.json().catch(() => ({}));
+            res.status(response.status).json(data);
+        }
+    } catch (error) {
+        console.error('Admin check proxy error:', error);
+        // If backend is offline or unreachable, deny admin access
+        res.status(503).json({ 
+            message: 'Server is currently offline. Cannot verify admin access.',
+            serverOffline: true
+        });
     }
 });
 

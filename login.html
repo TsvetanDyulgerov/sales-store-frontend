@@ -51,8 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         
-        console.log('Login attempt:', username);
-        
         errorMsg.textContent = '';
         submitButton.disabled = true;
         submitButton.textContent = 'Logging in...';
@@ -81,7 +79,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
             
         } catch (error) {
-            console.error('Login error:', error);
             errorMsg.className = 'mt-3 text-danger';
             errorMsg.textContent = error.message;
         } finally {
