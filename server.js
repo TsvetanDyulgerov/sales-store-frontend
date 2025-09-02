@@ -1,200 +1,49 @@
+/**
+ * Sales Store Frontend Server
+ * Main server file with modular organization
+ */
+
 const express = require('express');
 const path = require('path');
+
+// Import middleware
+const corsMiddleware = require('./server/middleware/cors');
+
+// Import route handlers
+const setupAuthRoutes = require('./server/routes/auth');
+const setupUserRoutes = require('./server/routes/users');
+const setupProductRoutes = require('./server/routes/products');
+const setupPageRoutes = require('./server/routes/pages');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware to parse JSON bodies
+// Middleware setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(corsMiddleware);
 
-// CORS middleware (in case backend needs it)
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    if (req.method === 'OPTIONS') {
-        res.sendStatus(200);
-    } else {
-        next();
-    }
-});
+// Serve static files from organized structure
+app.use('/css', express.static(path.join(__dirname, 'src/css')));
+app.use('/js', express.static(path.join(__dirname, 'src/js')));
+app.use('/assets', express.static(path.join(__dirname, 'assets'))); // For future assets
 
-// Serve static files (CSS, JS, images)
-app.use(express.static(path.join(__dirname, 'public')));
+// Setup API routes
+setupAuthRoutes(app);
+setupUserRoutes(app);
+setupProductRoutes(app);
 
-// Route for main page (landing)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Route for login page
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
-});
-
-// Route for register page
-app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'register.html'));
-});
-
-// Route for app page
-app.get('/app', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app.html'));
-});
-
-// API proxy routes for backend communication
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
-
-// Proxy login requests to backend
-app.post('/api/auth/login', async (req, res) => {
-    try {
-        const fetch = (await import('node-fetch')).default;
-        const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(req.body)
-        });
-
-        const data = await response.json();
-        
-        if (!response.ok) {
-            console.log('Backend login failed:', response.status, data);
-            return res.status(response.status).json(data);
-        }
-
-        console.log('Login successful, sending response to frontend');
-        res.json(data);
-    } catch (error) {
-        console.error('Login proxy error:', error);
-        // Check if it's a connection error (server offline)
-        if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message.includes('fetch failed')) {
-            res.status(503).json({ 
-                message: 'Server is currently offline. Please try again later.',
-                serverOffline: true
-            });
-        } else {
-            res.status(500).json({ message: 'Connection failed. Please try again later.' });
-        }
-    }
-});
-
-// Proxy register requests to backend
-app.post('/api/auth/register', async (req, res) => {
-    try {
-        console.log('Proxying registration request to backend:', `${BACKEND_URL}/api/auth/register`);
-        
-        const fetch = (await import('node-fetch')).default;
-        const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(req.body)
-        });
-
-        const data = await response.json();
-        
-        if (!response.ok) {
-            console.log('Backend registration failed:', response.status, data);
-            return res.status(response.status).json(data);
-        }
-
-        console.log('Registration successful, sending response to frontend');
-        res.status(201).json(data);
-    } catch (error) {
-        console.error('Register proxy error:', error);
-        // Check if it's a connection error (server offline)
-        if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message.includes('fetch failed')) {
-            res.status(503).json({ 
-                message: 'Server is currently offline. Please try again later.',
-                serverOffline: true
-            });
-        } else {
-            res.status(500).json({ message: 'Connection failed. Please try again later.' });
-        }
-    }
-});
-
-// Get products
-app.get('/api/products', async (req, res) => {
-    try {
-        console.log('Proxying products request to backend:', `${BACKEND_URL}/api/products`);
-        
-        const fetch = (await import('node-fetch')).default;
-        const response = await fetch(`${BACKEND_URL}/api/products`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.headers.authorization || ''
-            }
-        });
-
-        const data = await response.json();
-        
-        if (!response.ok) {
-            console.log('Backend products request failed:', response.status, data);
-            return res.status(response.status).json(data);
-        }
-
-        res.json(data);
-    } catch (error) {
-        console.error('Products proxy error:', error);
-        // Check if it's a connection error (server offline)
-        if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message.includes('fetch failed')) {
-            res.status(503).json({ 
-                message: 'Server is currently offline. Please try again later.',
-                serverOffline: true
-            });
-        } else {
-            res.status(500).json({ message: 'Connection failed. Please try again later.' });
-        }
-    }
-});
-
-// Admin access verification endpoint
-app.get('/api/auth/me', async (req, res) => {
-    try {
-        console.log('Checking admin access with backend:', `${BACKEND_URL}/api/auth/me`);
-
-        const fetch = (await import('node-fetch')).default;
-        const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.headers.authorization || ''
-            }
-        });
-
-        // Forward the exact response status from backend
-        if (response.ok) {
-            const data = await response.json();
-            res.status(200).json(data);
-        } else {
-            const data = await response.json().catch(() => ({}));
-            res.status(response.status).json(data);
-        }
-    } catch (error) {
-        console.error('Admin check proxy error:', error);
-        // If backend is offline or unreachable, deny admin access
-        res.status(503).json({ 
-            message: 'Server is currently offline. Cannot verify admin access.',
-            serverOffline: true
-        });
-    }
-});
-
-// Handle 404 errors - redirect unknown routes to index
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+// Setup page routes (should be last to handle catch-all)
+setupPageRoutes(app);
 
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
-    console.log(`Backend URL: ${BACKEND_URL}`);
+    console.log(`Backend URL: ${process.env.BACKEND_URL || 'http://localhost:8080'}`);
+    console.log('Serving files from organized structure:');
+    console.log('  - Pages: src/pages/');
+    console.log('  - JavaScript: src/js/');
+    console.log('  - CSS: src/css/');
 });
 
 module.exports = app;
