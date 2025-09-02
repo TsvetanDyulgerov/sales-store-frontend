@@ -10,10 +10,10 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="index.html">Online Store</a>
+        <a class="navbar-brand fw-bold" href="/">Online Store</a>
         <div class="d-flex">
-            <a href="login.html" class="btn btn-outline-light me-2">Login</a>
-            <a href="register.html" class="btn btn-primary">Register</a>
+            <a href="/login" class="btn btn-outline-light me-2">Login</a>
+            <a href="/register" class="btn btn-primary">Register</a>
         </div>
     </div>
 </nav>
@@ -63,7 +63,7 @@
     <div id="alertPlaceholder" class="mt-3"></div>
 
     <p class="text-center mt-3 mb-0">
-        Already have an account? <a href="login.html">Login here</a>
+        Already have an account? <a href="/login">Login here</a>
     </p>
 </main>
 
@@ -79,6 +79,7 @@
 <script>
     const form = document.getElementById("registerForm");
     const alertPlaceholder = document.getElementById("alertPlaceholder");
+    const submitButton = form.querySelector('button[type="submit"]');
 
     function showAlert(message, type) {
         alertPlaceholder.innerHTML = `
@@ -104,33 +105,43 @@
             password: document.getElementById("password").value
         };
 
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Registering...';
+
         try {
+            console.log('Attempting registration...');
+            
             const response = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
 
-            if (response.status !== 201) {
-                const errorData = await response.json();
-                showAlert(errorData.message || "Registration failed. Please try again.", "danger");
-                return;
-            } else if (response.status === 201) {
-                showAlert("Registration successful! Redirecting...", "success");
-                const data = await response.json();
+            const data = await response.json();
 
-                // Store JWT in localStorage
-                localStorage.setItem("jwt", data.token);
-
-                // Redirect to app page
-                window.location.href = "app";
+            if (!response.ok) {
+                throw new Error(data.message || `Registration failed: ${response.status}`);
             }
 
+            console.log('Registration successful:', data);
+            showAlert("Registration successful! Redirecting to dashboard...", "success");
 
+            // Store JWT in localStorage
+            localStorage.setItem("jwtToken", data.token);
+
+            // Redirect to app page
+            setTimeout(() => {
+                window.location.href = "/app";
+            }, 2000);
 
         } catch (error) {
-            console.error("Error:", error);
-            showAlert("An error occurred. Please try again later.", "danger");
+            console.error("Registration error:", error);
+            showAlert(error.message || "An error occurred. Please try again later.", "danger");
+        } finally {
+            // Reset button state
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Register';
         }
     });
 </script>

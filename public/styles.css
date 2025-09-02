@@ -1,0 +1,33 @@
+/* Custom styles for the Sales Store Frontend */
+
+/* You can add custom CSS here that will be available across all pages */
+
+.custom-btn {
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.custom-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Loading spinner for API calls */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Error alert animations */
+.alert {
+    transition: all 0.15s ease-in-out;
+}

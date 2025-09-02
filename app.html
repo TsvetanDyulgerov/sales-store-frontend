@@ -5,24 +5,393 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App - Online Store</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body class="d-flex flex-column min-vh-100">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="index.html">Online Store</a>
+        <a class="navbar-brand fw-bold" href="/">Online Store</a>
         <div class="d-flex">
-            <a href="login.html" class="btn btn-outline-light me-2">Login</a>
-            <a href="register.html" class="btn btn-primary">Register</a>
+            <span class="navbar-text me-3" id="userWelcome"></span>
+            <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
         </div>
     </div>
 </nav>
-<main class="container d-flex flex-column justify-content-center align-items-center text-center flex-grow-1">
-    <h2 class="mb-4">Welcome to the App Dashboard</h2>
-    <p class="lead">This is the main application page. You are logged in!</p>
+<main class="container mt-4 flex-grow-1">
+    <!-- Error Alert Area -->
+    <div id="errorAlert" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span id="errorMessage"></span>
+        <button type="button" class="btn-close" onclick="hideError()" aria-label="Close"></button>
+    </div>
+
+    <!-- Role-based Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Dashboard</h5>
+                    <p class="card-text" id="roleDescription">Loading user information...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Role Menu (Default) -->
+    <div id="userMenu" class="role-menu" style="display: none;">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-shop display-4 text-primary mb-3"></i>
+                        <h5 class="card-title">Browse Products</h5>
+                        <p class="card-text">View available products and add them to your cart</p>
+                        <button class="btn btn-primary" onclick="navigateToSection('products')">
+                            View Products
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-cart-plus display-4 text-success mb-3"></i>
+                        <h5 class="card-title">Create Order</h5>
+                        <p class="card-text">Place new orders from your shopping cart</p>
+                        <button class="btn btn-success" onclick="navigateToSection('create-order')">
+                            Create Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-receipt display-4 text-info mb-3"></i>
+                        <h5 class="card-title">My Orders</h5>
+                        <p class="card-text">View your order history and track status</p>
+                        <button class="btn btn-info" onclick="navigateToSection('my-orders')">
+                            View Orders
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Role Menu -->
+    <div id="adminMenu" class="role-menu" style="display: none;">
+        <div class="row">
+            <!-- Product Management -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-box-seam display-4 text-primary mb-3"></i>
+                        <h5 class="card-title">Manage Products</h5>
+                        <p class="card-text">Add, edit, delete and view all products in the database</p>
+                        <button class="btn btn-primary" onclick="navigateToSection('admin-products')">
+                            Manage Products
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- User Management -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people display-4 text-warning mb-3"></i>
+                        <h5 class="card-title">Manage Users</h5>
+                        <p class="card-text">View, edit and manage all user accounts</p>
+                        <button class="btn btn-warning" onclick="navigateToSection('admin-users')">
+                            Manage Users
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Order Management -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clipboard-data display-4 text-success mb-3"></i>
+                        <h5 class="card-title">Manage Orders</h5>
+                        <p class="card-text">View and manage all orders in the system</p>
+                        <button class="btn btn-success" onclick="navigateToSection('admin-orders')">
+                            Manage Orders
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Statistics Row -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">System Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <h6>Total Products</h6>
+                                        <h3 id="totalProducts">--</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <h6>Total Users</h6>
+                                        <h3 id="totalUsers">--</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h6>Total Orders</h6>
+                                        <h3 id="totalOrders">--</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h6>Revenue</h6>
+                                        <h3 id="totalRevenue">$--</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area (for future implementation) -->
+    <div id="contentArea" class="mt-4" style="display: none;">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0" id="contentTitle">Content</h5>
+                <button class="btn btn-secondary btn-sm" onclick="showDashboard()">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+            <div class="card-body" id="contentBody">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
 </main>
 <footer class="bg-dark text-light text-center py-3 mt-auto">
     <p class="mb-0">Online Store.</p>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Check authentication status
+    const jwtToken = localStorage.getItem('jwtToken');
+    
+    if (!jwtToken) {
+        // No token found, redirect to login
+        window.location.href = '/login';
+    }
+
+    // Simple JWT parsing to get user info (for display purposes)
+    function parseJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (error) {
+            console.error('Error parsing JWT:', error);
+            return null;
+        }
+    }
+
+    // Function to show error messages
+    function showError(message) {
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        errorMessage.textContent = message;
+        errorAlert.style.display = 'block';
+        errorAlert.classList.add('show');
+    }
+
+    // Function to hide error messages
+    function hideError() {
+        const errorAlert = document.getElementById('errorAlert');
+        errorAlert.classList.remove('show');
+        setTimeout(() => {
+            errorAlert.style.display = 'none';
+        }, 150);
+    }
+
+    // Function to make API requests with error handling
+    async function makeRequest(url, options = {}) {
+        try {
+            const response = await fetch(url, options);
+            
+            if (response.status === 503) {
+                const data = await response.json();
+                if (data.serverOffline) {
+                    showError('Server is currently offline. Please try again later.');
+                    return null;
+                }
+            }
+            
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Request failed');
+            }
+            
+            return response;
+        } catch (error) {
+            if (error.message.includes('fetch')) {
+                showError('Unable to connect to server. Please check your connection and try again.');
+            } else {
+                showError(error.message);
+            }
+            return null;
+        }
+    }
+
+    // Display user welcome message and determine role
+    if (jwtToken) {
+        const userInfo = parseJwt(jwtToken);
+        const userWelcome = document.getElementById('userWelcome');
+        const roleDescription = document.getElementById('roleDescription');
+        
+        if (userInfo && userInfo.username) {
+            userWelcome.textContent = `Welcome, ${userInfo.username}!`;
+            
+            // Determine user role and show appropriate menu
+            const userRole = userInfo.role || 'user'; // Default to 'user' if no role specified
+            
+            if (userRole === 'admin') {
+                document.getElementById('adminMenu').style.display = 'block';
+                roleDescription.textContent = `Welcome, ${userInfo.username}! You have administrator privileges.`;
+                loadAdminStats();
+            } else {
+                document.getElementById('userMenu').style.display = 'block';
+                roleDescription.textContent = `Welcome, ${userInfo.username}! Browse products and manage your orders.`;
+            }
+        } else {
+            userWelcome.textContent = 'Welcome!';
+            document.getElementById('userMenu').style.display = 'block';
+            roleDescription.textContent = 'Welcome! Browse products and manage your orders.';
+        }
+    }
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        // Remove JWT token
+        localStorage.removeItem('jwtToken');
+        
+        // Redirect to home page
+        window.location.href = '/';
+    });
+
+    // Navigation functions
+    function navigateToSection(section) {
+        console.log(`Navigating to: ${section}`);
+        
+        // Hide dashboard menus
+        document.getElementById('userMenu').style.display = 'none';
+        document.getElementById('adminMenu').style.display = 'none';
+        
+        // Show content area
+        document.getElementById('contentArea').style.display = 'block';
+        
+        // Update content based on section
+        const contentTitle = document.getElementById('contentTitle');
+        const contentBody = document.getElementById('contentBody');
+        
+        switch(section) {
+            case 'products':
+                contentTitle.textContent = 'Browse Products';
+                contentBody.innerHTML = '<div class="text-center text-muted"><p>Product browsing functionality will be implemented here.</p></div>';
+                break;
+            case 'create-order':
+                contentTitle.textContent = 'Create Order';
+                contentBody.innerHTML = '<div class="text-center text-muted"><p>Order creation functionality will be implemented here.</p></div>';
+                break;
+            case 'my-orders':
+                contentTitle.textContent = 'My Orders';
+                contentBody.innerHTML = '<div class="text-center text-muted"><p>User order history will be displayed here.</p></div>';
+                break;
+            case 'admin-products':
+                contentTitle.textContent = 'Manage Products';
+                contentBody.innerHTML = '<div class="text-center text-muted"><p>Product management functionality will be implemented here.</p></div>';
+                break;
+            case 'admin-users':
+                contentTitle.textContent = 'Manage Users';
+                contentBody.innerHTML = '<div class="text-center text-muted"><p>User management functionality will be implemented here.</p></div>';
+                break;
+            case 'admin-orders':
+                contentTitle.textContent = 'Manage Orders';
+                contentBody.innerHTML = '<div class="text-center text-muted"><p>Order management functionality will be implemented here.</p></div>';
+                break;
+            default:
+                contentTitle.textContent = 'Unknown Section';
+                contentBody.innerHTML = '<div class="text-center text-danger"><p>Section not found.</p></div>';
+        }
+    }
+    
+    // Function to show dashboard
+    function showDashboard() {
+        // Hide content area
+        document.getElementById('contentArea').style.display = 'none';
+        
+        // Show appropriate menu based on user role
+        const userInfo = parseJwt(jwtToken);
+        const userRole = userInfo?.role || 'user';
+        
+        if (userRole === 'admin') {
+            document.getElementById('adminMenu').style.display = 'block';
+        } else {
+            document.getElementById('userMenu').style.display = 'block';
+        }
+    }
+    
+    // Load admin statistics (placeholder)
+    async function loadAdminStats() {
+        try {
+            // These would be actual requests to your server
+            // For now, showing placeholder values
+            setTimeout(() => {
+                document.getElementById('totalProducts').textContent = '--';
+                document.getElementById('totalUsers').textContent = '--';
+                document.getElementById('totalOrders').textContent = '--';
+                document.getElementById('totalRevenue').textContent = '$--';
+            }, 500);
+            
+            // Future implementation would look like:
+            // const response = await makeRequest('/api/admin/stats', {
+            //     headers: { 'Authorization': `Bearer ${jwtToken}` }
+            // });
+            // if (response) {
+            //     const data = await response.json();
+            //     // Update the stats display
+            // }
+            
+        } catch (error) {
+            console.error('Error loading admin stats:', error);
+            showError('Failed to load statistics');
+        }
+    }
+
+    // Make functions globally available
+    window.navigateToSection = navigateToSection;
+    window.showDashboard = showDashboard;
+    window.showError = showError;
+    window.hideError = hideError;
+    window.makeRequest = makeRequest;
+</script>
 </body>
 </html>
