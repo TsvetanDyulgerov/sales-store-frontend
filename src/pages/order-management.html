@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/app">
+                <i class="bi bi-receipt me-2"></i>Order Management
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-3" id="userWelcome">Loading...</span>
+                <a href="/app" class="btn btn-outline-light btn-sm me-2">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <button class="btn btn-outline-danger btn-sm" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid mt-4 flex-grow-1">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">
+                        <i class="bi bi-receipt-cutoff text-primary me-2"></i>
+                        Order Management
+                    </h2>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createOrderModal">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Order
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Search and Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-search me-2"></i>Search Orders
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="searchByUuid" class="form-label">Search by UUID</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="searchByUuid" 
+                                           placeholder="Enter order UUID">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="searchOrderByUuid()">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filterByStatus" class="form-label">Filter by Status</label>
+                                <select class="form-select" id="filterByStatus" onchange="filterOrdersByStatus()">
+                                    <option value="">All Statuses</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="IN_PROGRESS">In Progress</option>
+                                    <option value="DONE">Done</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary" onclick="loadAllOrders()">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Refresh All
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-secondary" onclick="clearSearch()">
+                                        <i class="bi bi-x-circle me-2"></i>Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Summary -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-list-ul me-2"></i>Orders Overview
+                            </h6>
+                            <span id="orderCount" class="badge bg-primary">0 orders</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading orders...</p>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <div id="ordersContainer">
+                                <!-- Orders will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Order Modal -->
+    <div class="modal fade" id="createOrderModal" tabindex="-1" aria-labelledby="createOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createOrderModalLabel">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Order
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createOrderForm">
+                        <!-- User Assignment -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-person me-2"></i>Assign to User
+                            </h6>
+                            <div class="row">
+                                <div class="col-12">
+                                    <label for="assignedUsername" class="form-label">Username *</label>
+                                    <input type="text" class="form-control" id="assignedUsername" placeholder="Enter username" required>
+                                    <div class="form-text">Enter the username of the user this order will be assigned to.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Products -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="text-primary mb-0">
+                                    <i class="bi bi-cart me-2"></i>Order Items
+                                </h6>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="refreshProducts()">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh Products
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOrderItem()">
+                                        <i class="bi bi-plus me-1"></i>Add Item
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="orderItemsContainer">
+                                <!-- Order items will be added here -->
+                            </div>
+                        </div>
+
+                        <!-- Order Total -->
+                        <div class="mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Total Amount:</h6>
+                                        <h5 class="mb-0 text-success" id="orderTotal">$0.00</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="createOrder()">
+                        <i class="bi bi-check-circle me-2"></i>Create Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateStatusModalLabel">
+                        <i class="bi bi-arrow-repeat me-2"></i>Update Order Status
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <strong>Order UUID:</strong> <span id="statusOrderUuid"></span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Current Status:</strong> <span id="currentOrderStatus" class="badge"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newOrderStatus" class="form-label">New Status *</label>
+                        <select class="form-select" id="newOrderStatus" required>
+                            <option value="">Select new status...</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="DONE">Done</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="updateOrderStatus()">
+                        <i class="bi bi-check-circle me-2"></i>Update Status
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderDetailsModalLabel">
+                        <i class="bi bi-receipt me-2"></i>Order Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="orderDetailsContent">
+                    <!-- Order details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-3 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Online Store Admin Panel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/utils/jwt.js"></script>
+    <script src="/js/utils/api.js"></script>
+    <script src="/js/utils/ui.js"></script>
+    <script src="/js/auth/auth.js"></script>
+    <script src="/js/admin/order-management.js"></script>
+
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication and admin role
+            if (!authService.isAuthenticated()) {
+                window.location.href = '/login';
+                return;
+            }
+
+            const hasAdminRole = await authService.hasRole('ADMIN');
+            if (!hasAdminRole) {
+                window.location.href = '/app';
+                return;
+            }
+
+            // Setup logout
+            UIHelper.addEventListener('logoutBtn', 'click', () => {
+                authService.logout();
+            });
+
+            // Show user welcome message
+            try {
+                const userData = await authService.getCurrentUser();
+                if (userData && userData.username) {
+                    document.getElementById('userWelcome').textContent = `Welcome, ${userData.username}`;
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -116,7 +116,8 @@ class DashboardController {
                 window.location.href = '/admin/users';
                 break;
             case 'admin-orders':
-                this.renderAdminOrdersSection(contentTitle, contentBody);
+                // Redirect to the dedicated order management page
+                window.location.href = '/admin/orders';
                 break;
             case 'admin-analytics':
                 this.renderAdminAnalyticsSection(contentTitle, contentBody);

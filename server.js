@@ -13,6 +13,7 @@ const corsMiddleware = require('./server/middleware/cors');
 const setupAuthRoutes = require('./server/routes/auth');
 const setupUserRoutes = require('./server/routes/users');
 const setupProductRoutes = require('./server/routes/products');
+const setupOrderRoutes = require('./server/routes/orders');
 const setupPageRoutes = require('./server/routes/pages');
 
 const app = express();
@@ -32,6 +33,7 @@ app.use('/assets', express.static(path.join(__dirname, 'assets'))); // For futur
 setupAuthRoutes(app);
 setupUserRoutes(app);
 setupProductRoutes(app);
+setupOrderRoutes(app);
 
 // Setup page routes (should be last to handle catch-all)
 setupPageRoutes(app);

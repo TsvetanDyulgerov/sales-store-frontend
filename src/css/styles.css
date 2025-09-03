@@ -190,3 +190,99 @@
         padding: 0.25rem 0.5rem;
     }
 }
+
+/* Order Management Styles */
+.order-item {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 10px rgba(0,123,255,0.1);
+}
+
+.order-status-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.order-uuid {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.order-customer-info {
+    max-width: 200px;
+}
+
+.order-total {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.order-date {
+    font-size: 0.85em;
+    color: #6c757d;
+}
+
+/* Order Details Modal */
+.order-details-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.order-item-row {
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.order-item-row:last-child {
+    border-bottom: none;
+}
+
+/* Status badges with icons */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Order creation form */
+.create-order-section {
+    border-left: 4px solid #007bff;
+    padding-left: 1rem;
+}
+
+.product-selector {
+    border: 2px solid #e9ecef;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.product-selector:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* Responsive order table */
+@media (max-width: 768px) {
+    .order-table {
+        font-size: 0.9rem;
+    }
+    
+    .order-uuid {
+        font-size: 0.8rem;
+    }
+    
+    .order-customer-info {
+        max-width: 150px;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.8rem;
+    }
+}

@@ -87,6 +87,33 @@ class AuthService {
     }
 
     /**
+     * Check if user has a specific role
+     * @param {string} role - Role to check for
+     * @returns {Promise<boolean>} True if user has the role
+     */
+    async hasRole(role) {
+        try {
+            if (!this.isAuthenticated()) {
+                return false;
+            }
+
+            const userData = await this.getCurrentUser();
+            if (!userData || !userData.role) {
+                return false;
+            }
+
+            const userRole = userData.role.toLowerCase();
+            const targetRole = role.toLowerCase();
+            
+            return userRole === targetRole || 
+                   (targetRole === 'admin' && (userRole === 'admin' || userRole === 'administrator'));
+        } catch (error) {
+            console.error('Error checking user role:', error);
+            return false;
+        }
+    }
+
+    /**
      * Initialize authentication check
      * @returns {Promise<boolean>} True if authenticated
      */

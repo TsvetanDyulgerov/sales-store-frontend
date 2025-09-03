@@ -40,6 +40,11 @@ function setupPageRoutes(app) {
         res.sendFile(path.join(__dirname, '../../src/pages/product-management.html'));
     });
 
+    // Route for order management page (admin only)
+    app.get('/admin/orders', (req, res) => {
+        res.sendFile(path.join(__dirname, '../../src/pages/order-management.html'));
+    });
+
     // Handle 404 errors - redirect unknown routes to index
     app.get('*', (req, res) => {
         res.sendFile(path.join(__dirname, '../../src/pages/index.html'));

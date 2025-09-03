@@ -41,7 +41,13 @@ class ErrorHandler {
                 return res.status(204).send();
             }
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.log(`Backend ${operation} returned empty or invalid JSON response`);
+                return res.status(response.status).json([]);
+            }
             
             if (!response.ok) {
                 console.log(`Backend ${operation} failed:`, response.status, data);
