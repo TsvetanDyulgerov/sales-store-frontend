@@ -53,6 +53,27 @@ function setupProductRoutes(app) {
         }
     });
 
+    // Get product by name (must come before :id route to avoid conflicts)
+    app.get('/api/products/name/:name', async (req, res) => {
+        try {
+            const name = req.params.name;
+            console.log('Proxying get product by name request to backend:', `${BACKEND_URL}/api/products/name/${name}`);
+            
+            const fetch = (await import('node-fetch')).default;
+            const response = await fetch(`${BACKEND_URL}/api/products/name/${encodeURIComponent(name)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': req.headers.authorization || ''
+                }
+            });
+
+            await ErrorHandler.handleProxyResponse(response, res, 'get product by name');
+        } catch (error) {
+            ErrorHandler.handleProxyError(error, res, 'Get product by name');
+        }
+    });
+
     // Get product by ID
     app.get('/api/products/:id', async (req, res) => {
         try {

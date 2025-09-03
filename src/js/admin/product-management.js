@@ -206,8 +206,12 @@ class ProductManagementController {
         UIHelper.showLoading();
         
         try {
-            const products = await this.api.get(`/api/products/name/${encodeURIComponent(name)}`);
+            const response = await this.api.get(`/api/products/name/${encodeURIComponent(name)}`);
             UIHelper.hideLoading();
+            
+            // Backend returns a single product object, not an array
+            const products = Array.isArray(response) ? response : [response];
+            
             this.displayProducts(products);
             UIHelper.updateText('productCount', `${products.length} product(s) found`);
         } catch (error) {
