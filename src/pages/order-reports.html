@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Reports - Sales Store Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/app">
+                <i class="bi bi-file-earmark-text me-2"></i>Order Reports
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-3" id="userWelcome">Welcome, Admin</span>
+                <a href="/app" class="btn btn-outline-light btn-sm me-2">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <button class="btn btn-outline-danger btn-sm" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid mt-4 flex-grow-1">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">
+                        <i class="bi bi-graph-up text-primary me-2"></i>
+                        Order Reports & Analytics
+                    </h2>
+                    <button class="btn btn-success" onclick="exportReport()" id="exportBtn" disabled>
+                        <i class="bi bi-download me-2"></i>Export Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Filters Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-funnel me-2"></i>Report Filters
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="reportFiltersForm">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="productNameFilter" class="form-label">Product Name</label>
+                                    <input type="text" class="form-control" id="productNameFilter" placeholder="Enter product name">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="usernameFilter" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="usernameFilter" placeholder="Enter username">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="startDateFilter" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="startDateFilter">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="endDateFilter" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="endDateFilter">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-primary" onclick="generateReport()">
+                                            <i class="bi bi-search me-2"></i>Generate Report
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
+                                            <i class="bi bi-x-circle me-1"></i>Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="mb-4" id="summarySection" style="display: none;">
+            <div class="d-flex flex-wrap justify-content-between gap-3">
+                <div class="flex-fill" style="min-width: 200px; max-width: 300px;">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-receipt display-6 text-primary"></i>
+                            <h4 class="mt-2" id="totalOrders">0</h4>
+                            <p class="text-muted mb-0">Total Orders</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-fill" style="min-width: 200px; max-width: 300px;">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-currency-dollar display-6 text-success"></i>
+                            <h4 class="mt-2 text-success" id="totalRevenue">$0.00</h4>
+                            <p class="text-muted mb-0">Total Revenue</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-fill" style="min-width: 200px; max-width: 300px;">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-box-seam display-6 text-info"></i>
+                            <h4 class="mt-2 text-info" id="totalProducts">0</h4>
+                            <p class="text-muted mb-0">Unique Products</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-fill" style="min-width: 200px; max-width: 300px;">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-people display-6 text-warning"></i>
+                            <h4 class="mt-2 text-warning" id="totalCustomers">0</h4>
+                            <p class="text-muted mb-0">Unique Customers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Generating report...</span>
+            </div>
+            <p class="mt-2 text-muted">Analyzing order data...</p>
+        </div>
+
+        <!-- Report Results -->
+        <div class="row" id="reportSection" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-table me-2"></i>Order Report Results
+                        </h5>
+                        <span id="reportCount" class="badge bg-primary">0 records</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <div id="reportTableContainer">
+                                <!-- Report table will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div class="row" id="noResultsSection" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-file-earmark-x display-1 text-muted opacity-25"></i>
+                        <h5 class="mt-3">No Data Found</h5>
+                        <p class="text-muted">No orders match your selected criteria. Try adjusting the filters.</p>
+                        <button class="btn btn-primary" onclick="clearFilters()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-3 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">© 2025 Online Store Admin Panel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/utils/jwt.js"></script>
+    <script src="/js/utils/api.js"></script>
+    <script src="/js/utils/ui.js"></script>
+    <script src="/js/auth/auth.js"></script>
+    <script src="/js/admin/order-reports.js"></script>
+
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication and admin role
+            if (!authService.isAuthenticated()) {
+                window.location.href = '/login';
+                return;
+            }
+
+            const hasAdminRole = await authService.hasRole('ADMIN');
+            if (!hasAdminRole) {
+                window.location.href = '/app';
+                return;
+            }
+
+            // Setup logout
+            UIHelper.addEventListener('logoutBtn', 'click', () => {
+                authService.logout();
+            });
+
+            // Show user welcome message
+            try {
+                const userData = await authService.getCurrentUser();
+                if (userData && userData.username) {
+                    document.getElementById('userWelcome').textContent = `Welcome, ${userData.username}`;
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+
+            // Initialize report controller
+            window.reportController = new OrderReportsController();
+        });
+    </script>
+</body>
+</html>

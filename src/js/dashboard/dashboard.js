@@ -7,6 +7,7 @@ class DashboardController {
     constructor() {
         this.userData = null;
         this.isAdmin = false;
+        this.api = apiClient; // Use the same API client as other pages
     }
 
     /**
@@ -156,13 +157,48 @@ class DashboardController {
      */
     async loadAdminStats() {
         try {
-            setTimeout(() => {
-                UIHelper.updateText('totalProducts', '--');
-                UIHelper.updateText('totalUsers', '--');
-                UIHelper.updateText('totalOrders', '--');
-                UIHelper.updateText('totalRevenue', '$--');
-            }, 500);
+            // Make sure we have authentication before making API calls
+            if (!this.api.token) {
+                console.error('No authentication token available');
+                UIHelper.showError('Authentication required to load statistics');
+                return;
+            }
+            
+            // Load statistics from APIs with individual error handling
+            const products = await this.fetchProducts();
+            const users = await this.fetchUsers();
+            const orders = await this.fetchOrders();
+
+            // Update product count
+            const productCount = products ? products.length : 0;
+            UIHelper.updateText('totalProducts', productCount.toString());
+
+            // Update user count
+            const userCount = users ? users.length : 0;
+            UIHelper.updateText('totalUsers', userCount.toString());
+
+            // Update order count and calculate revenue
+            if (orders && orders.length > 0) {
+                const orderCount = orders.length;
+                UIHelper.updateText('totalOrders', orderCount.toString());
+                
+                // Calculate total revenue
+                const totalRevenue = orders.reduce((sum, order) => {
+                    const orderTotal = this.calculateOrderTotal(order);
+                    return sum + orderTotal;
+                }, 0);
+                
+                UIHelper.updateText('totalRevenue', `$${totalRevenue.toFixed(2)}`);
+            } else {
+                UIHelper.updateText('totalOrders', '0');
+                UIHelper.updateText('totalRevenue', '$0.00');
+            }
         } catch (error) {
+            console.error('Failed to load admin statistics:', error);
+            UIHelper.updateText('totalProducts', '--');
+            UIHelper.updateText('totalUsers', '--');
+            UIHelper.updateText('totalOrders', '--');
+            UIHelper.updateText('totalRevenue', '$--');
             UIHelper.showError('Failed to load statistics');
         }
     }
@@ -172,14 +208,51 @@ class DashboardController {
      */
     async loadUserStats() {
         try {
-            setTimeout(() => {
-                // Mock data for user stats - replace with actual API calls
-                UIHelper.updateText('userTotalOrders', '12');
-                UIHelper.updateText('userPendingOrders', '2');
-                UIHelper.updateText('userRecentOrder', '3 days ago');
-            }, 500);
+            // Get current user's orders
+            const orders = await this.fetchUserOrders();
+            
+            if (orders && orders.length > 0) {
+                UIHelper.updateText('userTotalOrders', orders.length.toString());
+                
+                // Count pending orders
+                const pendingOrders = orders.filter(order => 
+                    order.status && order.status.toLowerCase() === 'pending'
+                ).length;
+                UIHelper.updateText('userPendingOrders', pendingOrders.toString());
+                
+                // Find most recent order
+                const sortedOrders = orders.sort((a, b) => {
+                    const dateA = new Date(a.createdAt || a.orderDate || a.created_at);
+                    const dateB = new Date(b.createdAt || b.orderDate || b.created_at);
+                    return dateB - dateA;
+                });
+                
+                if (sortedOrders.length > 0) {
+                    const recentOrder = sortedOrders[0];
+                    const orderDate = new Date(recentOrder.createdAt || recentOrder.orderDate || recentOrder.created_at);
+                    const daysAgo = Math.floor((new Date() - orderDate) / (1000 * 60 * 60 * 24));
+                    
+                    let recentOrderText = 'Today';
+                    if (daysAgo === 1) {
+                        recentOrderText = '1 day ago';
+                    } else if (daysAgo > 1) {
+                        recentOrderText = `${daysAgo} days ago`;
+                    }
+                    
+                    UIHelper.updateText('userRecentOrder', recentOrderText);
+                } else {
+                    UIHelper.updateText('userRecentOrder', 'No orders');
+                }
+            } else {
+                UIHelper.updateText('userTotalOrders', '0');
+                UIHelper.updateText('userPendingOrders', '0');
+                UIHelper.updateText('userRecentOrder', 'No orders');
+            }
         } catch (error) {
-            UIHelper.showError('Failed to load user statistics');
+            console.error('Failed to load user statistics:', error);
+            UIHelper.updateText('userTotalOrders', '--');
+            UIHelper.updateText('userPendingOrders', '--');
+            UIHelper.updateText('userRecentOrder', '--');
         }
     }
 
@@ -399,6 +472,116 @@ class DashboardController {
                     </div>
                 </div>
             </div>`;
+    }
+
+    /**
+     * Fetch products from API
+     */
+    async fetchProducts() {
+        try {
+            return await this.api.get('/api/products');
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch users from API
+     */
+    async fetchUsers() {
+        try {
+            return await this.api.get('/api/users');
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch all orders from API
+     */
+    async fetchOrders() {
+        try {
+            return await this.api.get('/api/orders');
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch user-specific orders from API
+     */
+    async fetchUserOrders() {
+        try {
+            const allOrders = await this.api.get('/api/orders');
+            // Filter orders for current user
+            if (this.userData && this.userData.id && allOrders) {
+                return allOrders.filter(order => 
+                    order.userId === this.userData.id || 
+                    order.user_id === this.userData.id ||
+                    order.customerId === this.userData.id ||
+                    order.customer_id === this.userData.id
+                );
+            }
+            return allOrders || [];
+        } catch (error) {
+            console.error('Error fetching user orders:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Calculate total for an order
+     */
+    calculateOrderTotal(order) {
+        if (!order) {
+            return 0;
+        }
+
+        // Try different property names for total
+        if (order.totalCost !== undefined && order.totalCost !== null) {
+            return parseFloat(order.totalCost) || 0;
+        }
+        if (order.total !== undefined && order.total !== null) {
+            return parseFloat(order.total) || 0;
+        }
+        if (order.totalAmount !== undefined && order.totalAmount !== null) {
+            return parseFloat(order.totalAmount) || 0;
+        }
+        if (order.amount !== undefined && order.amount !== null) {
+            return parseFloat(order.amount) || 0;
+        }
+
+        // Calculate from orderProducts if available
+        if (order.orderProducts && Array.isArray(order.orderProducts)) {
+            return order.orderProducts.reduce((sum, item) => {
+                const price = parseFloat(item.productPrice || item.price || item.unitPrice || 0);
+                const quantity = parseInt(item.productQuantity || item.quantity || 1);
+                return sum + (price * quantity);
+            }, 0);
+        }
+
+        // Calculate from items if available
+        if (order.items && Array.isArray(order.items)) {
+            return order.items.reduce((sum, item) => {
+                const price = parseFloat(item.price || item.unitPrice || 0);
+                const quantity = parseInt(item.quantity || 1);
+                return sum + (price * quantity);
+            }, 0);
+        }
+
+        // Calculate from products if available
+        if (order.products && Array.isArray(order.products)) {
+            return order.products.reduce((sum, product) => {
+                const price = parseFloat(product.price || product.unitPrice || 0);
+                const quantity = parseInt(product.quantity || 1);
+                return sum + (price * quantity);
+            }, 0);
+        }
+
+        return 0;
     }
 }
 

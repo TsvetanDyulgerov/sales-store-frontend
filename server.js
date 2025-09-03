@@ -9,12 +9,13 @@ const path = require('path');
 // Import middleware
 const corsMiddleware = require('./server/middleware/cors');
 
-// Import route handlers
+// Import route setup functions
+const setupPageRoutes = require('./server/routes/pages');
 const setupAuthRoutes = require('./server/routes/auth');
 const setupUserRoutes = require('./server/routes/users');
 const setupProductRoutes = require('./server/routes/products');
 const setupOrderRoutes = require('./server/routes/orders');
-const setupPageRoutes = require('./server/routes/pages');
+const setupReportsRoutes = require('./server/routes/reports');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,7 @@ setupAuthRoutes(app);
 setupUserRoutes(app);
 setupProductRoutes(app);
 setupOrderRoutes(app);
+setupReportsRoutes(app);
 
 // Setup page routes (should be last to handle catch-all)
 setupPageRoutes(app);

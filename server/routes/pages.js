@@ -45,6 +45,24 @@ function setupPageRoutes(app) {
         res.sendFile(path.join(__dirname, '../../src/pages/order-management.html'));
     });
 
+    // Route for order reports page (admin only)
+    app.get('/admin/reports', (req, res) => {
+        res.sendFile(path.join(__dirname, '../../src/pages/order-reports.html'));
+    });
+
+    // Alternative route names for convenience
+    app.get('/order-management', (req, res) => {
+        res.sendFile(path.join(__dirname, '../../src/pages/order-management.html'));
+    });
+
+    app.get('/order-reports', (req, res) => {
+        res.sendFile(path.join(__dirname, '../../src/pages/order-reports.html'));
+    });
+
+    app.get('/reports', (req, res) => {
+        res.sendFile(path.join(__dirname, '../../src/pages/order-reports.html'));
+    });
+
     // Handle 404 errors - redirect unknown routes to index
     app.get('*', (req, res) => {
         res.sendFile(path.join(__dirname, '../../src/pages/index.html'));
