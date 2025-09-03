@@ -70,7 +70,7 @@
                             <div class="col-md-4">
                                 <label class="form-label">Search by ID</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="searchById" placeholder="Enter user ID">
+                                    <input type="text" class="form-control" id="searchById" placeholder="Enter user ID (UUID)">
                                     <button class="btn btn-outline-primary" onclick="searchUserById()">
                                         <i class="bi bi-search"></i>
                                     </button>
@@ -143,23 +143,41 @@
                     <form id="createUserForm">
                         <div class="mb-3">
                             <label class="form-label">Username *</label>
-                            <input type="text" class="form-control" id="createUsername" required>
+                            <input type="text" class="form-control" id="createUsername" 
+                                   minlength="3" maxlength="50" required
+                                   placeholder="">
+                            <div class="invalid-feedback" id="usernameError"></div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="createFirstName" 
+                                       maxlength="30" required
+                                       placeholder="">
+                                <div class="invalid-feedback" id="firstNameError"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="createLastName" 
+                                       maxlength="30" required
+                                       placeholder="">
+                                <div class="invalid-feedback" id="lastNameError"></div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email *</label>
-                            <input type="email" class="form-control" id="createEmail" required>
+                            <input type="email" class="form-control" id="createEmail" required
+                                   placeholder="">
+                            <div class="invalid-feedback" id="emailError"></div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password *</label>
-                            <input type="password" class="form-control" id="createPassword" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Role *</label>
-                            <select class="form-select" id="createRole" required>
-                                <option value="">Select role...</option>
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
-                            </select>
+                            <input type="password" class="form-control" id="createPassword" required
+                                   placeholder="">
+                            <div class="form-text">
+                                Password must be at least 8 characters long and contain at least 1 letter and 1 number
+                            </div>
+                            <div class="invalid-feedback" id="passwordError"></div>
                         </div>
                     </form>
                 </div>
@@ -202,8 +220,8 @@
                             <label class="form-label">Role</label>
                             <select class="form-select" id="editRole">
                                 <option value="">Keep current role</option>
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
+                                <option value="USER">User</option>
+                                <option value="ADMIN">Admin</option>
                             </select>
                         </div>
                         <div class="alert alert-info">

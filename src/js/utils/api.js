@@ -34,13 +34,26 @@ class APIClient {
             }
             
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || 'Request failed');
+                let errorMessage = 'Request failed';
+                
+                try {
+                    const data = await response.json();
+                    errorMessage = data.message || data.error || `HTTP ${response.status}: ${response.statusText}`;
+                } catch (e) {
+                    // If response is not JSON, use status info
+                    errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                }
+                
+                // Include status code in error message for better handling
+                const errorWithStatus = new Error(errorMessage);
+                errorWithStatus.status = response.status;
+                errorWithStatus.statusText = response.statusText;
+                throw errorWithStatus;
             }
             
             return response;
         } catch (error) {
-            if (error.message.includes('fetch')) {
+            if (error.message.includes('fetch') || error.name === 'TypeError') {
                 throw new Error('Unable to connect to server. Please check your connection and try again.');
             }
             throw error;

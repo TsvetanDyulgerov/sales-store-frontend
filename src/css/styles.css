@@ -94,3 +94,99 @@
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Form validation styles */
+.form-control.is-invalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 5.8 4.4 4.4m0-4.4-4.4 4.4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+.invalid-feedback.d-block,
+.was-validated .invalid-feedback {
+    display: block;
+}
+
+/* Conflict error specific styling */
+.conflict-error {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    color: #856404;
+}
+
+.conflict-error .bi {
+    color: #f39c12;
+}
+
+/* Smooth transitions for error states */
+.form-control {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Product management specific styles */
+.description-cell {
+    max-width: 200px;
+}
+
+.price-cell {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    min-width: 100px;
+}
+
+.stock-badge {
+    min-width: 60px;
+    text-align: center;
+}
+
+.product-table .btn-group {
+    min-width: 80px;
+}
+
+/* Product form styling */
+#createProductModal .modal-dialog,
+#editProductModal .modal-dialog {
+    max-width: 600px;
+}
+
+.product-form-row {
+    margin-bottom: 1rem;
+}
+
+/* Enhanced table responsiveness */
+.table-responsive {
+    border-radius: 0.375rem;
+}
+
+@media (max-width: 768px) {
+    .description-cell {
+        max-width: 150px;
+    }
+    
+    .price-cell {
+        font-size: 0.9em;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+}

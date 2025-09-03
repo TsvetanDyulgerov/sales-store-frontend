@@ -52,14 +52,13 @@ function setupUserRoutes(app) {
         }
     });
 
-    // Search users by username (admin only)
-    app.get('/api/users/search', async (req, res) => {
+    // Get user by username (admin only)
+    app.get('/api/users/username/:username', async (req, res) => {
         try {
-            const username = req.query.username;
-            console.log('Proxying search users request to backend:', `${BACKEND_URL}/api/users/search?username=${username}`);
+            console.log('Proxying get user by username request to backend:', `${BACKEND_URL}/api/users/username/${req.params.username}`);
             
             const fetch = (await import('node-fetch')).default;
-            const response = await fetch(`${BACKEND_URL}/api/users/search?username=${encodeURIComponent(username)}`, {
+            const response = await fetch(`${BACKEND_URL}/api/users/username/${encodeURIComponent(req.params.username)}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -67,9 +66,30 @@ function setupUserRoutes(app) {
                 }
             });
 
-            await ErrorHandler.handleProxyResponse(response, res, 'search users');
+            await ErrorHandler.handleProxyResponse(response, res, 'get user by username');
         } catch (error) {
-            ErrorHandler.handleProxyError(error, res, 'Search users');
+            ErrorHandler.handleProxyError(error, res, 'Get user by username');
+        }
+    });
+
+    // Create new user (admin only)
+    app.post('/api/users', async (req, res) => {
+        try {
+            console.log('Proxying create user request to backend:', `${BACKEND_URL}/api/users`);
+            
+            const fetch = (await import('node-fetch')).default;
+            const response = await fetch(`${BACKEND_URL}/api/users`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': req.headers.authorization || ''
+                },
+                body: JSON.stringify(req.body)
+            });
+
+            await ErrorHandler.handleProxyResponse(response, res, 'create user');
+        } catch (error) {
+            ErrorHandler.handleProxyError(error, res, 'Create user');
         }
     });
 

@@ -35,6 +35,11 @@ function setupPageRoutes(app) {
         res.sendFile(path.join(__dirname, '../../src/pages/user-management.html'));
     });
 
+    // Route for product management page (admin only)
+    app.get('/admin/products', (req, res) => {
+        res.sendFile(path.join(__dirname, '../../src/pages/product-management.html'));
+    });
+
     // Handle 404 errors - redirect unknown routes to index
     app.get('*', (req, res) => {
         res.sendFile(path.join(__dirname, '../../src/pages/index.html'));

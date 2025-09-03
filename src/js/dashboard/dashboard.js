@@ -108,12 +108,13 @@ class DashboardController {
             
             // Admin sections
             case 'admin-products':
-                this.renderAdminProductsSection(contentTitle, contentBody);
+                // Redirect to the dedicated product management page
+                window.location.href = '/admin/products';
                 break;
             case 'admin-users':
                 // Redirect to dedicated user management page
                 window.location.href = '/admin/users';
-                return;
+                break;
             case 'admin-orders':
                 this.renderAdminOrdersSection(contentTitle, contentBody);
                 break;

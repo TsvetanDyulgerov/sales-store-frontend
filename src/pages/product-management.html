@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        .price-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        .stock-badge {
+            min-width: 60px;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/app">
+                <i class="bi bi-arrow-left me-2"></i>Admin Panel
+            </a>
+            <div class="d-flex">
+                <span class="navbar-text me-3" id="adminWelcome">Loading...</span>
+                <button class="btn btn-outline-light" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mt-4 flex-grow-1">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="bi bi-box-seam-fill me-2 text-primary"></i>Product Management
+                        </h2>
+                        <p class="text-muted mb-0">Manage products, pricing, and inventory</p>
+                    </div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProductModal">
+                        <i class="bi bi-plus-circle me-2"></i>Create Product
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer" style="display: none;">
+            <div id="alertBox" class="alert alert-dismissible fade show" role="alert">
+                <i id="alertIcon" class="me-2"></i>
+                <span id="alertMessage"></span>
+                <button type="button" class="btn-close" onclick="hideAlert()"></button>
+            </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-search me-2"></i>Search Products
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Search by ID</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="searchById" placeholder="Enter product ID">
+                                    <button class="btn btn-outline-primary" onclick="searchProductById()">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Search by Name</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="searchByName" placeholder="Enter product name">
+                                    <button class="btn btn-outline-primary" onclick="searchProductByName()">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button class="btn btn-secondary w-100" onclick="loadAllProducts()">
+                                    <i class="bi bi-list-ul me-2"></i>Show All Products
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading products...</p>
+        </div>
+
+        <!-- Products Display Section -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-table me-2"></i>Products
+                        </h5>
+                        <span class="badge bg-primary" id="productCount">0 products</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="productsContainer">
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-box display-1 opacity-25"></i>
+                                <h5 class="mt-3">No Products</h5>
+                                <p>Use the search options above or create a new product to get started.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Product Modal -->
+    <div class="modal fade" id="createProductModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Product
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createProductForm">
+                        <div class="mb-3">
+                            <label class="form-label">Product Name *</label>
+                            <input type="text" class="form-control" id="createName" 
+                                   maxlength="50" required>
+                            <div class="form-text">Maximum 50 characters</div>
+                            <div class="invalid-feedback" id="nameError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="createDescription" 
+                                      maxlength="400" rows="3"
+                                      placeholder="Optional product description"></textarea>
+                            <div class="form-text">Maximum 400 characters (optional)</div>
+                            <div class="invalid-feedback" id="descriptionError"></div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Actual Price *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="createActualPrice" 
+                                           step="0.01" min="0.01" required>
+                                </div>
+                                <div class="form-text">Cost price of the product</div>
+                                <div class="invalid-feedback" id="actualPriceError"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Selling Price *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="createSellingPrice" 
+                                           step="0.01" min="0.01" required>
+                                </div>
+                                <div class="form-text">Price customers pay</div>
+                                <div class="invalid-feedback" id="sellingPriceError"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Available Quantity *</label>
+                            <input type="number" class="form-control" id="createAvailableQuantity" 
+                                   min="0" required>
+                            <div class="form-text">Number of items in stock</div>
+                            <div class="invalid-feedback" id="quantityError"></div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            All fields marked with * are required
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createProduct()">
+                        <i class="bi bi-check me-2"></i>Create Product
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil me-2"></i>Edit Product
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProductForm">
+                        <input type="hidden" id="editProductId">
+                        <div class="mb-3">
+                            <label class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="editName" maxlength="50">
+                            <div class="form-text">Maximum 50 characters</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="editDescription" 
+                                      maxlength="400" rows="3"></textarea>
+                            <div class="form-text">Maximum 400 characters</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Actual Price</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="editActualPrice" 
+                                           step="0.01" min="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Selling Price</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="editSellingPrice" 
+                                           step="0.01" min="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Available Quantity</label>
+                            <input type="number" class="form-control" id="editAvailableQuantity" min="0">
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Only fill the fields you want to update. Empty fields will remain unchanged.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="updateProduct()">
+                        <i class="bi bi-check me-2"></i>Update Product
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteProductModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <strong>Warning!</strong> This action cannot be undone.
+                    </div>
+                    <p>Are you sure you want to delete product <strong id="deleteProductName"></strong>?</p>
+                    <input type="hidden" id="deleteProductId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteProduct()">
+                        <i class="bi bi-trash me-2"></i>Delete Product
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light text-center py-3 mt-auto">
+        <p class="mb-0">
+            <i class="bi bi-box-seam me-2"></i>Admin Panel - Product Management
+        </p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/utils/jwt.js"></script>
+    <script src="/js/utils/api.js"></script>
+    <script src="/js/utils/ui.js"></script>
+    <script src="/js/auth/auth.js"></script>
+    <script src="/js/admin/product-management.js"></script>
+</body>
+</html>
