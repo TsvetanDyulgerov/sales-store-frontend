@@ -282,6 +282,22 @@ class OrderManagementController {
             const orderUuid = order.uuid || order.id || order.orderId;
             const displayId = order.id || order.uuid || order.orderId;
             
+            // Get product list for display
+            const orderProducts = order.orderProducts || order.items || order.products || order.orderItems || [];
+            const productNames = orderProducts.map(item => 
+                item.productName || item.name || 'Unknown Product'
+            );
+            
+            // Limit to 3 products and add "..." if there are more
+            let productDisplay = '';
+            if (productNames.length === 0) {
+                productDisplay = 'No items';
+            } else if (productNames.length <= 3) {
+                productDisplay = productNames.join(', ');
+            } else {
+                productDisplay = productNames.slice(0, 3).join(', ') + '...';
+            }
+            
             return `
             <tr>
                 <td>
@@ -289,7 +305,7 @@ class OrderManagementController {
                         <i class="bi bi-receipt me-2 text-primary fs-5"></i>
                         <div>
                             <div class="fw-semibold">${orderUuid || 'N/A'}</div>
-                            <small class="text-muted">ID: ${displayId || 'N/A'}</small>
+                            <small class="text-muted">${productDisplay}</small>
                         </div>
                     </div>
                 </td>
