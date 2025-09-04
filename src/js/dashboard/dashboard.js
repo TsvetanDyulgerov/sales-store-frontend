@@ -101,7 +101,8 @@ class DashboardController {
                 this.renderProductsSection(contentTitle, contentBody);
                 break;
             case 'create-order':
-                this.renderCreateOrderSection(contentTitle, contentBody);
+                // Redirect to the dedicated create order page
+                window.location.href = '/create-order';
                 break;
             case 'my-orders':
                 this.renderMyOrdersSection(contentTitle, contentBody);
@@ -479,6 +480,7 @@ class DashboardController {
      */
     async fetchProducts() {
         try {
+            // Use admin endpoint for dashboard statistics
             return await this.api.get('/api/products');
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -515,7 +517,7 @@ class DashboardController {
      */
     async fetchUserOrders() {
         try {
-            const allOrders = await this.api.get('/api/orders');
+            const allOrders = await this.api.get('/api/orders/me');
             // Filter orders for current user
             if (this.userData && this.userData.id && allOrders) {
                 return allOrders.filter(order => 

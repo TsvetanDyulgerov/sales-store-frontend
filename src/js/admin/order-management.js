@@ -172,34 +172,28 @@ class OrderManagementController {
     }
 
     /**
-     * Filter orders by status
+     * Filter orders by status (client-side filtering)
      */
-    async filterOrdersByStatus() {
+    filterOrdersByStatus() {
         const status = document.getElementById('filterByStatus')?.value;
         
         if (!status) {
-            await this.loadAllOrders();
+            // Show all orders if no status is selected
+            this.displayOrders(this.currentOrders);
+            UIHelper.updateText('orderCount', `${this.currentOrders.length} order(s) loaded`);
             return;
         }
 
-        UIHelper.showLoading();
+        // Filter orders by status on the client side
+        const filteredOrders = this.currentOrders.filter(order => 
+            order.status && order.status.toLowerCase() === status.toLowerCase()
+        );
         
-        try {
-            const orders = await this.api.get(`/api/orders/status/${status}`);
-            UIHelper.hideLoading();
-            this.displayOrders(orders);
-            UIHelper.updateText('orderCount', `${orders.length} order(s) found`);
-        } catch (error) {
-            UIHelper.hideLoading();
-            
-            if (this.isNotFoundError(error)) {
-                UIHelper.showAlert(`No orders found with status: "${status}"`, 'info');
-                this.displayOrders([]);
-                UIHelper.updateText('orderCount', '0 orders found');
-            } else {
-                const errorMessage = this.getErrorMessage(error);
-                UIHelper.showAlert(`Error filtering orders: ${errorMessage}`, 'danger');
-            }
+        this.displayOrders(filteredOrders);
+        UIHelper.updateText('orderCount', `${filteredOrders.length} order(s) found with status: ${status}`);
+        
+        if (filteredOrders.length === 0) {
+            UIHelper.showAlert(`No orders found with status: "${status}"`, 'info');
         }
     }
 

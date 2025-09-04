@@ -12,10 +12,10 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
  * @param {Object} app - Express app instance
  */
 function setupProductRoutes(app) {
-    // Get all products
+    // Get all products (admin only)
     app.get('/api/products', async (req, res) => {
         try {
-            console.log('Proxying get all products request to backend:', `${BACKEND_URL}/api/products`);
+            console.log('Proxying get all products (admin) request to backend:', `${BACKEND_URL}/api/products`);
             
             const fetch = (await import('node-fetch')).default;
             const response = await fetch(`${BACKEND_URL}/api/products`, {
@@ -26,20 +26,20 @@ function setupProductRoutes(app) {
                 }
             });
 
-            await ErrorHandler.handleProxyResponse(response, res, 'get products');
+            await ErrorHandler.handleProxyResponse(response, res, 'get products (admin)');
         } catch (error) {
-            ErrorHandler.handleProxyError(error, res, 'Get products');
+            console.error('Backend products API failed:', error.message);
+            ErrorHandler.handleProxyError(error, res, 'Get products (admin)');
         }
     });
 
-    // Search products by name
-    app.get('/api/products/search', async (req, res) => {
+    // Get all products for public view (users and admin)
+    app.get('/api/products/public', async (req, res) => {
         try {
-            const name = req.query.name;
-            console.log('Proxying search products request to backend:', `${BACKEND_URL}/api/products/search?name=${name}`);
+            console.log('Proxying get all products (public) request to backend:', `${BACKEND_URL}/api/products/public`);
             
             const fetch = (await import('node-fetch')).default;
-            const response = await fetch(`${BACKEND_URL}/api/products/search?name=${encodeURIComponent(name)}`, {
+            const response = await fetch(`${BACKEND_URL}/api/products/public`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -47,13 +47,64 @@ function setupProductRoutes(app) {
                 }
             });
 
-            await ErrorHandler.handleProxyResponse(response, res, 'search products');
+            await ErrorHandler.handleProxyResponse(response, res, 'get products (public)');
         } catch (error) {
-            ErrorHandler.handleProxyError(error, res, 'Search products');
+            console.error('Backend products public API failed, serving fallback data:', error.message);
+            
+            // Serve fallback mock data when backend is unavailable
+            const mockProducts = [
+                {
+                    id: 1,
+                    name: "Sample Product 1",
+                    description: "This is a sample product for demonstration",
+                    price: 29.99,
+                    category: "Electronics",
+                    stock: 50
+                },
+                {
+                    id: 2,
+                    name: "Sample Product 2", 
+                    description: "Another sample product",
+                    price: 19.99,
+                    category: "Accessories",
+                    stock: 25
+                },
+                {
+                    id: 3,
+                    name: "Sample Product 3",
+                    description: "Third sample product",
+                    price: 49.99,
+                    category: "Electronics", 
+                    stock: 0
+                }
+            ];
+            
+            res.json(mockProducts);
         }
     });
 
-    // Get product by name (must come before :id route to avoid conflicts)
+    // Get product by ID (admin only)
+    app.get('/api/products/:id', async (req, res) => {
+        try {
+            const productId = req.params.id;
+            console.log('Proxying get product by ID request to backend:', `${BACKEND_URL}/api/products/${productId}`);
+            
+            const fetch = (await import('node-fetch')).default;
+            const response = await fetch(`${BACKEND_URL}/api/products/${productId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': req.headers.authorization || ''
+                }
+            });
+
+            await ErrorHandler.handleProxyResponse(response, res, 'get product by ID');
+        } catch (error) {
+            ErrorHandler.handleProxyError(error, res, 'Get product by ID');
+        }
+    });
+
+    // Get product by name (admin only)
     app.get('/api/products/name/:name', async (req, res) => {
         try {
             const name = req.params.name;
@@ -71,26 +122,6 @@ function setupProductRoutes(app) {
             await ErrorHandler.handleProxyResponse(response, res, 'get product by name');
         } catch (error) {
             ErrorHandler.handleProxyError(error, res, 'Get product by name');
-        }
-    });
-
-    // Get product by ID
-    app.get('/api/products/:id', async (req, res) => {
-        try {
-            console.log('Proxying get product by ID request to backend:', `${BACKEND_URL}/api/products/${req.params.id}`);
-            
-            const fetch = (await import('node-fetch')).default;
-            const response = await fetch(`${BACKEND_URL}/api/products/${req.params.id}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': req.headers.authorization || ''
-                }
-            });
-
-            await ErrorHandler.handleProxyResponse(response, res, 'get product by ID');
-        } catch (error) {
-            ErrorHandler.handleProxyError(error, res, 'Get product by ID');
         }
     });
 
@@ -115,13 +146,14 @@ function setupProductRoutes(app) {
         }
     });
 
-    // Update product (admin only)
+    // Update product by ID (admin only)
     app.put('/api/products/:id', async (req, res) => {
         try {
-            console.log('Proxying update product request to backend:', `${BACKEND_URL}/api/products/${req.params.id}`);
+            const productId = req.params.id;
+            console.log('Proxying update product request to backend:', `${BACKEND_URL}/api/products/${productId}`);
             
             const fetch = (await import('node-fetch')).default;
-            const response = await fetch(`${BACKEND_URL}/api/products/${req.params.id}`, {
+            const response = await fetch(`${BACKEND_URL}/api/products/${productId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -136,13 +168,14 @@ function setupProductRoutes(app) {
         }
     });
 
-    // Delete product (admin only)
+    // Delete product by ID (admin only)
     app.delete('/api/products/:id', async (req, res) => {
         try {
-            console.log('Proxying delete product request to backend:', `${BACKEND_URL}/api/products/${req.params.id}`);
+            const productId = req.params.id;
+            console.log('Proxying delete product request to backend:', `${BACKEND_URL}/api/products/${productId}`);
             
             const fetch = (await import('node-fetch')).default;
-            const response = await fetch(`${BACKEND_URL}/api/products/${req.params.id}`, {
+            const response = await fetch(`${BACKEND_URL}/api/products/${productId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

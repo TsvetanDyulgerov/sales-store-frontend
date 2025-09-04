@@ -32,14 +32,13 @@ function setupOrderRoutes(app) {
         }
     });
 
-    // Get orders by status
-    app.get('/api/orders/status/:status', async (req, res) => {
+    // Get orders for current user (must come before /:uuid route)
+    app.get('/api/orders/me', async (req, res) => {
         try {
-            const status = req.params.status;
-            console.log('Proxying get orders by status request to backend:', `${BACKEND_URL}/api/orders/status/${status}`);
-            
+            console.log('Proxying get orders for current user request to backend:', `${BACKEND_URL}/api/orders/me`);
+
             const fetch = (await import('node-fetch')).default;
-            const response = await fetch(`${BACKEND_URL}/api/orders/status/${status}`, {
+            const response = await fetch(`${BACKEND_URL}/api/orders/me`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -47,9 +46,9 @@ function setupOrderRoutes(app) {
                 }
             });
 
-            await ErrorHandler.handleProxyResponse(response, res, 'get orders by status');
+            await ErrorHandler.handleProxyResponse(response, res, 'get orders for current user');
         } catch (error) {
-            ErrorHandler.handleProxyError(error, res, 'Get orders by status');
+            ErrorHandler.handleProxyError(error, res, 'Get orders for current user');
         }
     });
 
