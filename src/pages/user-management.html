@@ -280,6 +280,20 @@
     <script src="/js/utils/api.js"></script>
     <script src="/js/utils/ui.js"></script>
     <script src="/js/auth/auth.js"></script>
+    <script src="/js/auth/admin-guard.js"></script>
     <script src="/js/admin/user-management.js"></script>
+    <script>
+        // Initialize page with admin guard
+        document.addEventListener('DOMContentLoaded', async function() {
+            const isAuthorized = await adminGuard.init();
+            if (!isAuthorized) {
+                return;
+            }
+            
+            // Initialize user management controller
+            window.userController = new UserManagementController();
+            await userController.init();
+        });
+    </script>
 </body>
 </html>

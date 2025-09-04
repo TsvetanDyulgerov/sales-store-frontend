@@ -7,7 +7,6 @@ class CreateOrderController {
     constructor() {
         this.api = apiClient;
         this.products = [];
-        this.filteredProducts = [];
         this.cart = [];
         this.currentUser = null;
     }
@@ -47,29 +46,6 @@ class CreateOrderController {
      * Setup event listeners
      */
     setupEventListeners() {
-        // Search input
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', () => this.applyFilters());
-        }
-
-        // Filter dropdowns
-        const categoryFilter = document.getElementById('categoryFilter');
-        if (categoryFilter) {
-            categoryFilter.addEventListener('change', () => this.applyFilters());
-        }
-
-        const priceRangeFilter = document.getElementById('priceRangeFilter');
-        if (priceRangeFilter) {
-            priceRangeFilter.addEventListener('change', () => this.applyFilters());
-        }
-
-        // Clear filters button
-        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
-        if (clearFiltersBtn) {
-            clearFiltersBtn.addEventListener('click', () => this.clearFilters());
-        }
-
         // View cart button
         const viewCartBtn = document.getElementById('viewCartBtn');
         if (viewCartBtn) {
@@ -88,18 +64,14 @@ class CreateOrderController {
      */
     async loadProducts() {
         try {
-            UIHelper.showElement('loadingSpinner');
-            UIHelper.hideElement('productsGrid');
-            UIHelper.hideElement('noProductsMessage');
+            UIHelper.toggleElement('loadingSpinner', true);
+            UIHelper.toggleElement('productsGrid', false);
+            UIHelper.toggleElement('noProductsMessage', false);
 
             const products = await this.api.get('/api/products/public');
             
             if (products && Array.isArray(products)) {
                 this.products = products;
-                this.filteredProducts = [...products];
-                
-                // Populate category filter
-                this.populateCategoryFilter();
                 
                 // Display products
                 this.displayProducts();
@@ -107,99 +79,17 @@ class CreateOrderController {
                 UIHelper.updateText('productCount', `${products.length} product(s) found`);
             } else {
                 this.products = [];
-                this.filteredProducts = [];
                 UIHelper.updateText('productCount', '0 products found');
-                UIHelper.showElement('noProductsMessage');
+                UIHelper.toggleElement('noProductsMessage', true);
             }
 
-            UIHelper.hideElement('loadingSpinner');
+            UIHelper.toggleElement('loadingSpinner', false);
         } catch (error) {
             console.error('Error loading products:', error);
-            UIHelper.hideElement('loadingSpinner');
-            UIHelper.showElement('noProductsMessage');
+            UIHelper.toggleElement('loadingSpinner', false);
+            UIHelper.toggleElement('noProductsMessage', true);
             UIHelper.showAlert('Failed to load products. Please try again.', 'danger');
         }
-    }
-
-    /**
-     * Populate category filter dropdown
-     */
-    populateCategoryFilter() {
-        const categoryFilter = document.getElementById('categoryFilter');
-        if (!categoryFilter) return;
-
-        // Get unique categories
-        const categories = [...new Set(this.products.map(product => 
-            product.category || 'Uncategorized'
-        ))].sort();
-
-        // Clear existing options (except "All Categories")
-        while (categoryFilter.children.length > 1) {
-            categoryFilter.removeChild(categoryFilter.lastChild);
-        }
-
-        // Add category options
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = category;
-            categoryFilter.appendChild(option);
-        });
-    }
-
-    /**
-     * Apply filters to products
-     */
-    applyFilters() {
-        const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-        const categoryFilter = document.getElementById('categoryFilter')?.value || '';
-        const priceRangeFilter = document.getElementById('priceRangeFilter')?.value || '';
-
-        this.filteredProducts = this.products.filter(product => {
-            // Search filter
-            const matchesSearch = !searchTerm || 
-                (product.name && product.name.toLowerCase().includes(searchTerm)) ||
-                (product.description && product.description.toLowerCase().includes(searchTerm));
-
-            // Category filter
-            const productCategory = product.category || 'Uncategorized';
-            const matchesCategory = !categoryFilter || productCategory === categoryFilter;
-
-            // Price range filter
-            let matchesPrice = true;
-            if (priceRangeFilter) {
-                const price = parseFloat(product.price) || 0;
-                switch (priceRangeFilter) {
-                    case '0-25':
-                        matchesPrice = price <= 25;
-                        break;
-                    case '25-50':
-                        matchesPrice = price > 25 && price <= 50;
-                        break;
-                    case '50-100':
-                        matchesPrice = price > 50 && price <= 100;
-                        break;
-                    case '100+':
-                        matchesPrice = price > 100;
-                        break;
-                }
-            }
-
-            return matchesSearch && matchesCategory && matchesPrice;
-        });
-
-        this.displayProducts();
-        UIHelper.updateText('productCount', `${this.filteredProducts.length} product(s) found`);
-    }
-
-    /**
-     * Clear all filters
-     */
-    clearFilters() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('categoryFilter').value = '';
-        document.getElementById('priceRangeFilter').value = '';
-        this.applyFilters();
     }
 
     /**
@@ -211,19 +101,19 @@ class CreateOrderController {
 
         if (!productsGrid) return;
 
-        if (this.filteredProducts.length === 0) {
-            UIHelper.hideElement('productsGrid');
-            UIHelper.showElement('noProductsMessage');
+        if (this.products.length === 0) {
+            UIHelper.toggleElement('productsGrid', false);
+            UIHelper.toggleElement('noProductsMessage', true);
             return;
         }
 
-        UIHelper.showElement('productsGrid');
-        UIHelper.hideElement('noProductsMessage');
+        UIHelper.toggleElement('productsGrid', true);
+        UIHelper.toggleElement('noProductsMessage', false);
 
-        productsGrid.innerHTML = this.filteredProducts.map(product => this.createProductCard(product)).join('');
+        productsGrid.innerHTML = this.products.map(product => this.createProductCard(product)).join('');
 
         // Add event listeners to "Add to Cart" buttons
-        this.filteredProducts.forEach(product => {
+        this.products.forEach(product => {
             const addToCartBtn = document.getElementById(`addToCart-${product.id}`);
             if (addToCartBtn) {
                 addToCartBtn.addEventListener('click', () => this.addToCart(product));
@@ -235,18 +125,16 @@ class CreateOrderController {
      * Create HTML for a product card
      */
     createProductCard(product) {
-        const price = parseFloat(product.price) || 0;
-        const category = product.category || 'Uncategorized';
+        const price = parseFloat(product.sellingPrice || product.price) || 0;
         const description = product.description || 'No description available';
-        const stock = product.stock || product.quantity || 0;
+        const stock = product.availableQuantity || product.stock || product.quantity || 0;
         const inStock = stock > 0;
 
         return `
             <div class="col-lg-4 col-md-6">
                 <div class="card h-100 ${!inStock ? 'border-secondary' : ''}">
                     <div class="card-header bg-light">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary">${category}</span>
+                        <div class="d-flex justify-content-end align-items-center">
                             <span class="text-muted small">Stock: ${stock}</span>
                         </div>
                     </div>
@@ -371,7 +259,7 @@ class CreateOrderController {
 
         // Calculate total
         const total = this.cart.reduce((sum, item) => {
-            return sum + (parseFloat(item.product.price) * item.quantity);
+            return sum + (parseFloat(item.product.sellingPrice || item.product.price) * item.quantity);
         }, 0);
 
         cartItems.innerHTML = this.cart.map(item => this.createCartItemHTML(item)).join('');
@@ -400,7 +288,7 @@ class CreateOrderController {
      * Create HTML for cart item
      */
     createCartItemHTML(item) {
-        const price = parseFloat(item.product.price) || 0;
+        const price = parseFloat(item.product.sellingPrice || item.product.price) || 0;
         const subtotal = price * item.quantity;
 
         return `
@@ -457,7 +345,7 @@ class CreateOrderController {
                 orderProducts: this.cart.map(item => ({
                     productId: item.product.id,
                     productName: item.product.name,
-                    productPrice: parseFloat(item.product.price),
+                    productPrice: parseFloat(item.product.sellingPrice || item.product.price),
                     productQuantity: item.quantity
                 }))
             };

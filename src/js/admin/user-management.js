@@ -150,35 +150,19 @@ class UserManagementController {
      * Initialize user management page
      */
     async init() {
-        // Check authentication and admin access
-        if (!JWTHelper.requireAuth()) {
-            return;
-        }
-
         try {
+            // Get user data for welcome message
             const userData = await authService.getCurrentUser();
-            
-            if (!userData) {
-                UIHelper.showAlert('Unable to verify user credentials. Please log in again.', 'danger');
-                setTimeout(() => window.location.href = '/login', 2000);
-                return;
+            if (userData && userData.username) {
+                UIHelper.updateText('adminWelcome', `Welcome, ${userData.username}!`);
             }
-
-            if (!authService.isAdmin(userData)) {
-                UIHelper.showAlert('Access denied. Administrator privileges required.', 'danger');
-                setTimeout(() => window.location.href = '/app', 2000);
-                return;
-            }
-
-            // Set welcome message
-            UIHelper.updateText('adminWelcome', `Welcome, ${userData.username}!`);
             
             // Setup event listeners
             this.setupEventListeners();
             
         } catch (error) {
-            UIHelper.showAlert('Error verifying access permissions.', 'danger');
-            setTimeout(() => window.location.href = '/app', 2000);
+            console.error('Error during user management initialization:', error);
+            UIHelper.showAlert('Error loading user management interface.', 'danger');
         }
     }
 

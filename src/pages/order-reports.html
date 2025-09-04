@@ -194,37 +194,25 @@
     <script src="/js/utils/api.js"></script>
     <script src="/js/utils/ui.js"></script>
     <script src="/js/auth/auth.js"></script>
+    <script src="/js/auth/admin-guard.js"></script>
     <script src="/js/admin/order-reports.js"></script>
 
     <script>
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function() {
-            // Check authentication and admin role
-            if (!authService.isAuthenticated()) {
-                window.location.href = '/login';
-                return;
+            // Use admin guard for authentication
+            const isAuthorized = await adminGuard.init();
+            if (!isAuthorized) {
+                return; // Guard will handle redirect
             }
 
-            const hasAdminRole = await authService.hasRole('ADMIN');
-            if (!hasAdminRole) {
-                window.location.href = '/app';
-                return;
-            }
+            // Setup user welcome message
+            await adminGuard.setupUserWelcome();
 
             // Setup logout
             UIHelper.addEventListener('logoutBtn', 'click', () => {
                 authService.logout();
             });
-
-            // Show user welcome message
-            try {
-                const userData = await authService.getCurrentUser();
-                if (userData && userData.username) {
-                    document.getElementById('userWelcome').textContent = `Welcome, ${userData.username}`;
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-            }
 
             // Initialize report controller
             window.reportController = new OrderReportsController();
