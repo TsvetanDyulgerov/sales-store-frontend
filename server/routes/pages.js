@@ -55,6 +55,11 @@ function setupPageRoutes(app) {
         res.sendFile(path.join(__dirname, '../../src/pages/create-order.html'));
     });
 
+    // Route for order history page (customer)
+    app.get('/order-history', (req, res) => {
+        res.sendFile(path.join(__dirname, '../../src/pages/order-history.html'));
+    });
+
     // Route for shop page (alternative to create-order)
     app.get('/shop', (req, res) => {
         res.sendFile(path.join(__dirname, '../../src/pages/create-order.html'));

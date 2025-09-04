@@ -32,7 +32,7 @@ function setupOrderRoutes(app) {
         }
     });
 
-    // Get orders for current user (must come before /:uuid route)
+    // Get orders for current user
     app.get('/api/orders/me', async (req, res) => {
         try {
             console.log('Proxying get orders for current user request to backend:', `${BACKEND_URL}/api/orders/me`);

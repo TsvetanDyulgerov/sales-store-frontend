@@ -105,7 +105,8 @@ class DashboardController {
                 window.location.href = '/create-order';
                 break;
             case 'my-orders':
-                this.renderMyOrdersSection(contentTitle, contentBody);
+                // Redirect to the dedicated order history page
+                window.location.href = '/order-history';
                 break;
             
             // Admin sections
