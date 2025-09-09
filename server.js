@@ -41,8 +41,8 @@ setupReportsRoutes(app);
 setupPageRoutes(app);
 
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
     console.log(`Backend URL: ${process.env.BACKEND_URL || 'http://localhost:8080'}`);
     console.log('Serving files from organized structure:');
     console.log('  - Pages: src/pages/');
