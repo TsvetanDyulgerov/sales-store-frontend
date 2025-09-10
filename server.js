@@ -2,6 +2,7 @@
  * Sales Store Frontend Server
  * Main server file with modular organization
  */
+require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
@@ -41,7 +42,8 @@ setupReportsRoutes(app);
 setupPageRoutes(app);
 
 // Start the server
-app.listen(PORT, '0.0.0.0', () => {
+
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);
     console.log(`Backend URL: ${process.env.BACKEND_URL || 'http://localhost:8080'}`);
     console.log('Serving files from organized structure:');
@@ -49,5 +51,21 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('  - JavaScript: src/js/');
     console.log('  - CSS: src/css/');
 });
+
+function shutdown(signal) {
+    console.log(`Received ${signal}. Shutting down server...`);
+    server.close(() => {
+        console.log('Server closed. Exiting process.');
+        process.exit(0);
+    });
+    // Force exit if not closed in 5 seconds
+    setTimeout(() => {
+        console.error('Force exiting after timeout.');
+        process.exit(1);
+    }, 5000);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 module.exports = app;
