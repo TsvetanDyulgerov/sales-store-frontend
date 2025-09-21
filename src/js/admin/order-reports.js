@@ -12,6 +12,25 @@ class OrderReportsController {
     }
 
     /**
+     * Initialize the Order Reports page
+     */
+    async init() {
+        try {
+            console.log('Initializing Order Reports System...');
+            
+            // Set user welcome message
+            const userInfo = authService.getCurrentUser();
+            if (userInfo && userInfo.username) {
+                UIHelper.updateText('adminWelcome', `Welcome, ${userInfo.username}`);
+            }
+        } catch (error) {
+            console.error('Error during Order Management System initialization:', error);
+            UIHelper.showAlert('Failed to initialize order management system. Please refresh the page.', 'danger');
+        }
+
+    }
+
+    /**
      * Generate report based on current filters
      */
     async generateReport() {

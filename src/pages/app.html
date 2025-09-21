@@ -109,8 +109,7 @@
         <!-- Admin Header -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card bg-gradient-primary text-white">
-                </div>
+                <div class="card bg-gradient-primary text-white"></div>
             </div>
         </div>
 
@@ -166,21 +165,20 @@
             </div>
         </div>
 
-        <!-- Analytics & Reports Section -->
+        <!-- Combined Analytics, Reports & System Overview Section -->
         <div class="row mb-4">
             <div class="col-12">
                 <h5 class="text-muted mb-3">
                     <i class="bi bi-graph-up me-2"></i>
-                    Analytics & Reports
+                    Analytics, Reports & System Overview
                 </h5>
             </div>
-        
             <div class="col-md-6 mb-3">
                 <div class="card h-100 border-secondary">
-                    <div class="card-body text-center">
-                        <i class="bi bi-graph-up display-4 text-secondary mb-3"></i>
-                        <h5 class="card-title">Order Reports</h5>
-                        <p class="card-text">Generate filtered reports and analytics</p>
+                    <div class="card-body d-flex flex-column justify-content-center align-items-center h-100 p-3">
+                        <i class="bi bi-graph-up display-3 text-secondary mb-2"></i>
+                        <h5 class="card-title mb-2">Order Reports</h5>
+                        <p class="card-text mb-3">Generate filtered reports and analytics</p>
                         <a href="/order-reports" class="btn btn-secondary">
                             <i class="bi bi-graph-up me-2"></i>
                             View Reports
@@ -188,23 +186,13 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- System Overview Statistics -->
-        <div class="row">
-            <div class="col-12">
-                <h5 class="text-muted mb-3">
-                    <i class="bi bi-speedometer2 me-2"></i>
-                    System Overview
-                </h5>
-            </div>
-            <div class="col-12">
-                <div class="card">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
                     <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-md-3 mb-3">
+                        <div class="row g-3">
+                            <div class="col-6">
                                 <div class="card bg-primary text-white h-100">
-                                    <div class="card-body">
+                                    <div class="card-body text-center">
                                         <i class="bi bi-box-seam fa-2x mb-2"></i>
                                         <h6>Total Products</h6>
                                         <h3 id="totalProducts">--</h3>
@@ -212,19 +200,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-6">
                                 <div class="card bg-warning text-white h-100">
-                                    <div class="card-body">
+                                    <div class="card-body text-center">
                                         <i class="bi bi-people fa-2x mb-2"></i>
                                         <h6>Total Users</h6>
                                         <h3 id="totalUsers">--</h3>
-                                        <small>Registered users</small>
+                                        <small>Registered customers</small>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-6">
                                 <div class="card bg-success text-white h-100">
-                                    <div class="card-body">
+                                    <div class="card-body text-center">
                                         <i class="bi bi-receipt fa-2x mb-2"></i>
                                         <h6>Total Orders</h6>
                                         <h3 id="totalOrders">--</h3>
@@ -232,9 +220,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-6">
                                 <div class="card bg-info text-white h-100">
-                                    <div class="card-body">
+                                    <div class="card-body text-center">
                                         <i class="bi bi-currency-dollar fa-2x mb-2"></i>
                                         <h6>Revenue</h6>
                                         <h3 id="totalRevenue">$--</h3>

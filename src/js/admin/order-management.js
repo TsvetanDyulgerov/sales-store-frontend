@@ -87,8 +87,8 @@ class OrderManagementController {
             
             // Set user welcome message
             const userInfo = authService.getCurrentUser();
-            if (userInfo) {
-                UIHelper.updateText('userWelcome', `Welcome, ${userInfo.firstName} ${userInfo.lastName}`);
+            if (userInfo && userInfo.username) {
+                UIHelper.updateText('adminWelcome', `Welcome, ${userInfo.username}`);
             }
 
             // Setup event listeners
