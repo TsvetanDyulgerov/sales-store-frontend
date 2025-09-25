@@ -29,3 +29,21 @@ The full project is hosted on GitHub: [sales-store-deployment](https://github.co
     ```bash
     docker-compose up --build
     ```
+   
+
+## User Interface Preview
+![AdminDash.png](public/images/AdminDash.png)
+
+![OrderReports.png](public/images/OrderReports.png)
+
+![CreateProduct.png](public/images/CreateProduct.png)
+
+![UserMan.png](public/images/UserMan.png)
+
+![ProductMan.png](public/images/ProductMan.png)
+
+![UserDash.png](public/images/UserDash.png)
+
+![CreateOrder.png](public/images/CreateOrder.png)
+
+![OrderHist.png](public/images/OrderHist.png)
