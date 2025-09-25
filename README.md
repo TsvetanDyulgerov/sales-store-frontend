@@ -3,9 +3,8 @@
 ## About
 **sales-store-frontend** is a user-friendly web application designed to interact with the [sales-store-backend system](https://github.com/TsvetanDyulgerov/sales-store-backend). 
 It provides an intuitive interface with dedicated authenticated views for both `admin` and `user` roles, allowing for a seamless and secure experiance.
-The frontend works standalone in is own express.js server and communicates with the backend via RESTful API calls.
+The frontend works standalone in its own express.js server and communicates with the backend via RESTful API calls.
 
-This project may be updated to use React in the future.
 
 ## Getting Started
 
